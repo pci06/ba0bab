@@ -1,0 +1,24 @@
+#WARNING UPDATED AUTOMATICALLY on 2017/01/29 00:39:23
+# Default options for sslh initscript
+# sourced by /etc/init.d/sslh
+
+# Disabled by default, to force yourself
+# to read the configuration:
+# - /usr/share/doc/sslh/README.Debian (quick start)
+# - /usr/share/doc/sslh/README, at "Configuration" section
+# - sslh(8) via "man sslh" for more configuration details.
+# Once configuration ready, you *must* set RUN to yes here
+# and try to start sslh (standalone mode only)
+
+RUN=no
+
+# binary to use: forked (sslh) or single-thread (sslh-select) version
+# systemd users: don't forget to modify /lib/systemd/system/sslh.service
+DAEMON=/usr/sbin/sslh
+#MYIP=a.b.c.d
+
+#DAEMON_OPTS="-n --transparent --user sslh --listen 90.116.177.53:443 --ssh 90.116.177.53:4222 --ssl 90.116.177.53:4443 --pidfile /var/run/sslh/sslh.pid"
+#DAEMON_OPTS="-n --transparent --listen 90.116.177.53:443 --ssh 90.116.177.53:4222 --ssl 90.116.177.53:4443"
+#DAEMON_OPTS="-v -n --transparent --listen 90.116.177.53:443 --ssh 90.116.177.53:4222 --ssl 90.116.177.53:4443"
+#DAEMON_OPTS="-n --listen 90.116.177.53:443 --ssh 127.0.0.1:22 --ssl 127.0.0.1:443"
+DAEMON_OPTS="-n --transparent --listen a.b.c.d:443 --ssh a.b.c.d:4222 --ssl a.b.c.d:4443"
