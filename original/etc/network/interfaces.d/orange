@@ -1,0 +1,64 @@
+#auto _WANIFACE_ vlan832 
+auto vlan832 
+#vlan851 vlan838 vlan840
+
+#allow-hotplog _WANIFACE_
+#iface _WANIFACE_ inet static
+#	address 192.168.88.88
+#	netmask 255.255.255.0
+
+# VLAN Internet
+iface vlan832 inet manual
+	vlan-id 832
+  vlan-raw-device _WANIFACE_
+	up /opt/isc-dhcp/sbin/dhclient -v -4 -cf /etc/dhcp/orange/832.conf -pf /run/dhclient.vlan832.pid -lf /var/lib/dhcp/dhclient.vlan832.leases vlan832
+	post-down dhclient -x -pf /run/dhclient.vlan832.pid || true
+
+iface vlan832 inet6 manual
+	vlan-id 832
+	up /opt/isc-dhcp/sbin/dhclient -v -6 -P -D LL -cf /etc/dhcp/orange/832-6.conf -pf /run/dhclient6.vlan832.pid -lf /var/lib/dhcp/dhclient6.vlan832.leases vlan832
+	post-down dhclient -x -pf /run/dhclient6.vlan832.pid || true
+  vlan-raw-device _WANIFACE_
+
+# VLAN PPoE
+iface vlan835 inet manual
+	vlan-id 835
+  vlan-raw-device _WANIFACE_
+
+# VLAN VoD
+iface vlan838 inet manual
+	vlan-id 838
+  vlan-raw-device _WANIFACE_
+	up /bin/ip link set dev vlan838 type vlan egress 0:4 1:4 2:4 3:4 4:4 5:4 6:6 7:4
+	up /opt/isc-dhcp/sbin/dhclient -4 -cf /etc/dhcp/orange/838.conf -v -pf /run/dhclient.vlan838.pid -lf /var/lib/dhcp/dhclient.vlan838.leases -sf /sbin/dhclient-script vlan838
+	post-down dhclient -x -pf /run/dhclient.vlan838.pid || true
+
+# VLAN VoD
+iface vlan839 inet manual
+	vlan-id 839
+  vlan-raw-device _WANIFACE_
+	up /opt/isc-dhcp/sbin/dhclient -4 -cf /etc/dhcp/orange/839.conf -v -pf /run/dhclient.vlan839.pid -lf /var/lib/dhcp/dhclient.vlan839.leases -sf /sbin/dhclient-script vlan839
+	post-down dhclient -x -pf /run/dhclient.vlan839.pid || true
+
+# VLAN TV
+iface vlan840 inet static
+	vlan-id 840
+  vlan-raw-device _WANIFACE_
+	up /bin/ip link set dev vlan838 type vlan egress 0:5 1:5 2:5 3:5 4:5 5:5 6:6 7:5
+	address 192.168.255.254
+  netmask 255.255.255.0
+
+
+iface vlan841 inet manual
+	vlan-id 841
+  vlan-raw-device _WANIFACE_
+
+# VoIP
+iface vlan851 inet manual
+	vlan-id 851
+  vlan-raw-device _WANIFACE_
+	up /bin/ip link set dev vlan851 type vlan egress 0:6 1:0 2:0 3:0 4:0 5:0 6:0 7:0
+	up /opt/isc-dhcp/sbin/dhclient -4 -cf /etc/dhcp/orange/851.conf -v -pf /run/dhclient.vlan851.pid -lf /var/lib/dhcp/dhclient.vlan851.leases -sf /sbin/dhclient-script vlan851
+	up /bin/ip link set dev vlan851 type vlan egress 0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0
+	post-down dhclient -x -pf /run/dhclient.vlan851.pid || true
+
