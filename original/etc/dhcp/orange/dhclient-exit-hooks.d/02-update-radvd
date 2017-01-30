@@ -1,0 +1,73 @@
+
+set -x
+echo "Entering update radvd"
+getLinkLocalSuffix () {
+  local IFACE=$1
+  /sbin/ip -o -6 addr show dev $IFACE scope link | /bin/sed -n '/.*fe80::.*/ {s,.*inet6[[:space:]]\+\([:[:alnum:]]\+\)/.*,\1,;p}' | /usr/bin/tail -n 1 | /usr/bin/cut -d ':' -f 3-
+	
+}
+
+getLinkLocalIPV6Suffix () {
+	local IFACE=$1
+	local macAddress=$(ip -o l show dev $IFACE  | /bin/sed 's,.*ether[[:space:]]\+\([0-9a-f:]\+\).*,\1,')
+	/usr/bin/ipv6calc --action prefixmac2ipv6 --in prefix+mac --out ipv6addr fe80:: "$macAddress" | /bin/sed -n '/.*fe80::.*/ {s,.*inet6[[:space:]]\+\([:[:alnum:]]\+\)/.*,\1,;p}' | /usr/bin/tail -n 1 | /usr/bin/cut -d ':' -f 3-
+}
+
+generateRadvdConf () {
+cat <<_EOF > /etc/radvd.conf
+############################################
+# Generated file DO NOT EDIT
+############################################
+$(cat /etc/radvd.d/*.conf)
+_EOF
+}
+
+
+update_radvd_conf () {
+	local IFACE=$1
+	local radvdConf=/etc/radvd.d/${IFACE}.conf
+	local oldPrefix=$old_ip6_prefix
+	local newPrefix=$new_ip6_prefix
+	local oldPrefixLen=${oldPrefix##*/}
+	local oldPrefixRaw=${oldPrefix%::/*}
+	local newPrefixLen=${newPrefix##*/}
+	local newPrefixRaw=${newPrefix%::/*}
+
+#	local myPrefix=${newPrefixRaw}:${newPrefixRaw%%:*}
+	local myPrefix=${newPrefixRaw}
+	local myPrefixLen=64
+	currentIpWithoutLen=${newPrefixRaw}:$(getLinkLocalIPV6Suffix $IFACE)
+	local prefixExpr='s,\(^[[:space:]]*prefix[[:space:]]\+\)[:/[:alnum:]]\+,\1'"${myPrefix}"'::/'"$myPrefixLen"','
+	local rdnssExpr='s,\(^[[:space:]]*RDNSS[[:space:]]*\)[:[:alnum:]]*,\1'"$currentIpWithoutLen"','
+	/bin/mkdir -p ${radvdConf%/*}
+
+	/bin/sed -i "$prefixExpr;$rdnssExpr" $radvdConf
+	
+}
+
+if [ -n "$new_ip6_prefix" ]; then
+
+	case $reason in
+		BOUND6)
+			for IFACE in $(cat /etc/dhcp/radvd-interfaces); do
+				update_radvd_conf $IFACE
+			done
+
+			generateRadvdConf
+		;;
+		REBIND6|RENEW6)
+			for IFACE in $(cat /etc/dhcp/radvd-interfaces); do
+				update_radvd_conf $IFACE
+			done
+
+			generateRadvdConf
+			systemctl try-reload-or-restart radvd
+		;;
+		RELEASE6)
+			systemctl stop radvd
+		;;
+	esac
+
+fi
+echo "Exiting radvd"
+set +x

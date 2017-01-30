@@ -1,0 +1,18 @@
+[Unit]
+Description=PCI Router Advertising Daemon
+After=networking.service
+Wants=network.target
+
+[Service]
+Type=simple
+#Restart=on-failure
+#TimeoutSec=5min
+#IgnoreSIGPIPE=no
+#KillMode=process
+#RemainAfterExit=yes
+ExecStart=/usr/sbin/radvd -n -m stderr
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=network-online.target
+
