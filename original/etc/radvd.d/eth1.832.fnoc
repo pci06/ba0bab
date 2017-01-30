@@ -1,0 +1,18 @@
+interface _WANIFACE_.832
+{
+#	AdvManagedFlag off; # no DHCPv6 server here.
+#	AdvOtherConfigFlag on; # not even for options.
+	AdvSendAdvert on;
+#	AdvDefaultPreference high;
+#	AdvLinkMTU 1280;
+	
+	#pick one non-link-local prefix assigned to the interface and start advertising it
+	prefix a:b:c:d
+	{
+		AdvOnLink on;
+		AdvAutonomous on;
+    AdvPreferredLifetime 86400;
+    AdvValidLifetime 86400;                                                             
+#		AdvLifetime 30;
+	};
+};
