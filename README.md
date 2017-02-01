@@ -9,4 +9,10 @@ Contains source configuration to be customized by genconfig.sh
 
 - systemd
 Contains a radvd systemd unit
+Don't forget to:
+systemctl daemon-reload && systemctl enable myradvd.service
 
+
+Scripts:
+checkbin.sh: check the necessary binaries
+genconfig.sh: helper to generate your configuration
