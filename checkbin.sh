@@ -1,8 +1,10 @@
 #!/bin/bash
 
-for binDep in $(find -type f -exec sed -n '/.*\/bin\/.*\+/ { s,.*bin/\([[:alnum:]\-]\+\).*,\1,;p}' '{}' ';'  | sort -u) dhclient; do
-	binPath=$(which $binDep)
-	[ -n "$binPath" ] && echo $binPath OK || echo $binDep KO
+for binDep in $(find -type f -exec sed -n '/.*\/bin\/.*\+/ { s,.*bin/\([[:alnum:]\-]\+\).*,\1,;p}' '{}' ';'  | sort -u) dhclient vconfig; do
+	binPath=$(/usr/bin/which $binDep)
+	[ -n "$binPath" ] && echo $binPath OK || { toFind=(${toFind[@]} "$binDep") ; echo $binDep KO; }
 done
 
-echo "!!! CHECK THE PATH OF DHCLIENT !!!"
+for bin2Find in ${toFind[@]}; do
+	/usr/lib/command-not-found --no-failure-msg -- "$bin2Find"
+done 2>&1 | grep sudo
