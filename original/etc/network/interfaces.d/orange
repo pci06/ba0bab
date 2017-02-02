@@ -3,9 +3,9 @@ auto vlan832
 #vlan851 vlan838 vlan840
 
 #allow-hotplog _WANIFACE_
-#iface _WANIFACE_ inet static
-#	address 192.168.88.88
-#	netmask 255.255.255.0
+iface _WANIFACE_ inet static
+	address 192.168.88.88
+	netmask 255.255.255.0
 
 # VLAN Internet
 iface vlan832 inet manual
