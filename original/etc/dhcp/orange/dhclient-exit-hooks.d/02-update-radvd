@@ -1,5 +1,8 @@
 
 set -x
+
+RADVDIFS=/etc/radvd.d/radvd-interfaces
+
 echo "Entering update radvd"
 getLinkLocalSuffix () {
   local IFACE=$1
@@ -49,22 +52,22 @@ if [ -n "$new_ip6_prefix" ]; then
 
 	case $reason in
 		BOUND6)
-			for IFACE in $(cat /etc/dhcp/radvd-interfaces); do
+			for IFACE in $(cat $RADVDIFS); do
 				update_radvd_conf $IFACE
 			done
 
 			generateRadvdConf
 		;;
 		REBIND6|RENEW6)
-			for IFACE in $(cat /etc/dhcp/radvd-interfaces); do
+			for IFACE in $(cat $RADVDIFS); do
 				update_radvd_conf $IFACE
 			done
 
 			generateRadvdConf
-			systemctl try-reload-or-restart radvd
+			systemctl start myradvd
 		;;
 		RELEASE6)
-			systemctl stop radvd
+			systemctl stop myradvd
 		;;
 	esac
 

@@ -101,10 +101,38 @@ for cFile in $(find original/etc/sysctl.d original/etc/radvd* original/etc/netwo
 	sed "$sedExpr" $cFile > $destDir/${cFile#original/}
 done
 
+rm -f $destDir/etc/radvd.d/*
 for nic in ${IPv6NICs[@]}; do
-echo $nic >> $destDir/etc/dhcp/radvd-interfaces
+	echo $nic >> $destDir/etc/radvd.d/radvd-interfaces
+	cat > $destDir/etc/radvd.d/${nic}.conf <<_DOC
+interface ${nic}
+{
+	AdvManagedFlag off; # no DHCPv6 server here.
+#	AdvOtherConfigFlag on; # not even for options.
+	AdvSendAdvert on;
+	AdvDefaultPreference medium;
+#	AdvLinkMTU 1280;
+  AdvSendAdvert on;
+  MinRtrAdvInterval 10; 
+  MaxRtrAdvInterval 600;
+	
+	#pick one non-link-local prefix assigned to the interface and start advertising it
+	prefix a:b:c:d
+	{
+		AdvOnLink on;
+		AdvAutonomous on;
+    AdvPreferredLifetime 1800;
+    AdvValidLifetime 3600;                                                             
+#		AdvLifetime 30;
+	};
+
+	RDNSS a:b:c:d
+	{
+		AdvRDNSSLifetime 900;
+	};
+
+};
+_DOC
 done
-
-
 
 
