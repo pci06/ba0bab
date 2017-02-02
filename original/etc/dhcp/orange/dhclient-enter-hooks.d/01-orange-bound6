@@ -20,11 +20,13 @@ if [ "$interface" = "vlan832" ]; then
 		;;
 		BOUND6)
 			setup_ip6 $new_ip6_prefix
+			/bin/systemctl stop myradvd
 			/bin/rdisc6 -m -w 1000 ff02::2 $interface
 			/bin/ip link set dev $interface type vlan egress 0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0
 		;;
 		REBIND6|RENEW6)
 #			/bin/ip link set dev $interface type vlan egress 0:0 1:0 2:0 3:0 4:0 5:0 6:6 7:0
+			/bin/systemctl stop myradvd
 			prefixMatch=${old_ip6_prefix%::/*}
 			for currentAddr in $(/sbin/ip -o -6 addr show dev $interface scope global | sed -n '/.*'${prefixMatch}'.*/ {s,.*inet6[[:space:]]\+\([/:[:alnum:]]\+\)[[:space:]]\+.*,\1,;p}'); do
 				/sbin/ip -6 address del $currentAddr dev $interface
@@ -34,6 +36,7 @@ if [ "$interface" = "vlan832" ]; then
 			setup_ip6 $new_ip6_prefix
 		;;
 		RELEASE6)
+			/bin/systemctl stop myradvd
 			prefixMatch=${new_ip6_prefix%::/*}
 			for currentAddr in $(/sbin/ip -o -6 addr show dev $interface scope global | sed -n '/.*'${prefixMatch}'.*/ {s,.*inet6[[:space:]]\+\([/:[:alnum:]]\+\)[[:space:]]\+.*,\1,;p}'); do
 			/sbin/ip -6 address del $currentAddr dev $interface
