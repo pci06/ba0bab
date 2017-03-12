@@ -14,5 +14,7 @@ original/etc/sysctl.d/99-sysctl.conf
 original/etc/sysctl.d/README
 original/etc/sysctl.d/redis.conf
 original/etc/sysctl.d/uhd-usrp2.conf
-
-original/etc/radvd.d/radvd-interfaces
+original/etc/radvd.conf
+original/etc/radvd.d/*.conf
+original/etc/radvd.d/*.fnoc
+original/etc/radvd.d/radvd*

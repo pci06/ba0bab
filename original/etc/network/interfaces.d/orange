@@ -1,5 +1,5 @@
 #auto _WANIFACE_ vlan832 
-auto vlan832 
+auto vlan832
 #vlan851 vlan838 vlan840
 
 #allow-hotplog _WANIFACE_
@@ -8,18 +8,20 @@ iface _WANIFACE_ inet static
 	netmask 255.255.255.0
 
 # VLAN Internet
-iface vlan832 inet manual
+iface vlan832 inet6 manual
 	vlan-id 832
   vlan-raw-device _WANIFACE_
 	up /opt/isc-dhcp/sbin/dhclient -v -4 -cf /etc/dhcp/orange/832.conf -pf /run/dhclient.vlan832.pid -lf /var/lib/dhcp/dhclient.vlan832.leases vlan832
-	post-down dhclient -x -pf /run/dhclient.vlan832.pid || true
-
-iface vlan832 inet6 manual
-	vlan-id 832
 	up /opt/isc-dhcp/sbin/dhclient -v -6 -P -D LL -cf /etc/dhcp/orange/832-6.conf -pf /run/dhclient6.vlan832.pid -lf /var/lib/dhcp/dhclient6.vlan832.leases vlan832
-	post-down dhclient -x -pf /run/dhclient6.vlan832.pid || true
-  vlan-raw-device _WANIFACE_
+	down dhclient -v -x -cf /etc/dhcp/orange/832.conf -lf /var/lib/dhcp/dhclient.vlan832.leases -pf /run/dhclient.vlan832.pid vlan832 || true
+	down dhclient -v -6 -x  -cf /etc/dhcp/orange/832-6.conf -pf /run/dhclient6.vlan832.pid -lf /var/lib/dhcp/dhclient6.vlan832.leases vlan832 || true
 
+#iface vlan832 inet6 manual
+#	vlan-id 832
+#  vlan-raw-device _WANIFACE_
+#	up /opt/isc-dhcp/sbin/dhclient -v -6 -P -D LL -cf /etc/dhcp/orange/832-6.conf -pf /run/dhclient6.vlan832.pid -lf /var/lib/dhcp/dhclient6.vlan832.leases vlan832
+#	down dhclient -v -6 -x  -cf /etc/dhcp/orange/832-6.conf -pf /run/dhclient6.vlan832.pid -lf /var/lib/dhcp/dhclient6.vlan832.leases vlan832 || true
+#
 # VLAN PPoE
 iface vlan835 inet manual
 	vlan-id 835

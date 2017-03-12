@@ -1,23 +1,27 @@
 
-set -x
-echo "Entering $BASH_SOURCE"
+#set -x
+echo "Entering $BASH_SOURCE ($reason)"
 
 if [ "$interface" = "vlan832" ]; then
 	case $reason in
 		PREINIT)
+			echo "$BASH_SOURCE --> $reason"
 			/sbin/ip link set dev $interface up
 			/bin/ip link set dev $interface type vlan egress 0:6 1:0 2:0 3:0 4:0 5:0 6:0 7:0
 		;;
 		BOUND)
+			echo "$BASH_SOURCE --> $reason"
 			/bin/ip link set dev $interface type vlan egress 0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0
 		;;
 		REBIND)
+			echo "$BASH_SOURCE --> $reason"
 			/bin/ip link set dev $interface type vlan egress 0:6 1:0 2:0 3:0 4:0 5:0 6:0 7:0
 		;;
 		RELEASE)
+			echo "$BASH_SOURCE --> $reason"
 			/bin/ip link set dev $interface type vlan egress 0:6 1:0 2:0 3:0 4:0 5:0 6:0 7:0
 		;;
 	esac
 fi
-echo "Exiting $BASH_SOURCE"
-set +x
+echo "Exiting $BASH_SOURCE ($reason)"
+#set +x
