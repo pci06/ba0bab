@@ -79,8 +79,8 @@ case $reason in
 			if [ -n "$new_ip6_prefix" ] && [ "$new_ip6_prefix" != "$old_ip6_prefix" ]; then
 				generateRadvdConf
 			fi
-			if [ -z "$myCause" ]; then
-				systemctl restart myradvd
+			if [ -z "$myCause" ] && pgrep radvd; then
+				systemctl try-restart myradvd
 			fi
 		;;
 		RENEW6)
@@ -88,11 +88,11 @@ case $reason in
 if [ -n "$new_ip6_prefix" ] && [ "$new_ip6_prefix" != "$old_ip6_prefix" ]; then
 			generateRadvdConf
 fi
-			systemctl restart myradvd
+			systemctl try-restart myradvd
 		;;
 		RELEASE6)
 			echo "$BASH_SOURCE --> $reason"
-			systemctl stop myradvd
+#			systemctl stop myradvd
 		;;
 		STOP6|STOP)
 			echo "$BASH_SOURCE --> $reason"

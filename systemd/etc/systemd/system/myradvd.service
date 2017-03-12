@@ -1,7 +1,15 @@
 [Unit]
 Description=PCI Router Advertising Daemon
-#After=networking.service
-After=ifup@vlan832.service
+#After=ifup@vlan832.service
+Before=shutdown.target
+Before=nfs-server.service
+After=systemd-journald-dev-log.socket
+After=remote-fs.target
+After=networking.service
+After=network-online.target
+Wants=network-online.target
+Conflicts=shutdown.target
+
 
 [Service]
 Type=simple
@@ -12,7 +20,7 @@ Type=simple
 #RemainAfterExit=yes
 ExecStart=/usr/sbin/radvd -n -m stderr
 
-#[Install]
-#WantedBy=multi-user.target
+[Install]
+WantedBy=multi-user.target
 #WantedBy=network-online.target
 
