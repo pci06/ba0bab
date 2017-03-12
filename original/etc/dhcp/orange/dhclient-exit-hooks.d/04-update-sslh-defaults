@@ -1,0 +1,35 @@
+echo "Entering $BASH_SOURCE ($reason)"
+updateSSLHConf () {
+	/bin/sed /etc/default/sslh -f - <<_DOC
+/^#WARNING.*UPDATED.*/ {
+	s,on .*,on $(date '+%Y/%m/%d %H:%M:%S'),
+} 
+/^#WARNING.*UPDATED.*/! {
+1 i #WARNING UPDATED AUTOMATICALLY on $(date '+%Y/%m/%d %H:%M:%S')
+}
+/^[ \t]*DAEMON_OPTS=.*/ {
+  s,\(--listen[[:space:]]\+\)[0-9.]\+,\1$new_ip,
+  s,\(--ssh[[:space:]]\+\)[0-9.]\+,\1$new_ip,
+  s,\(--ssl[[:space:]]\+\)[0-9.]\+,\1$new_ip,
+}
+s,\(^.*MYIP=\).*,\1$new_ip,
+_DOC
+}
+
+if [ "$interface" = "vlan832" ]; then
+	if [  "$old_ip_address" != "$new_ip_address" ]; then
+		new_ip=$new_ip_address
+  	case $reason in
+    	BOUND6)
+				echo "$BASH_SOURCE --> $reason"
+				updateSSLHConf
+			;;
+			REBIND6|RENEW6)
+				echo "$BASH_SOURCE --> $reason"
+				updateSSLHConf
+				systemctl restart sslh
+			;;
+		esac
+	fi
+fi
+echo "Exiting $BASH_SOURCE ($reason)"

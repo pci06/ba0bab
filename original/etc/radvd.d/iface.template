@@ -1,4 +1,4 @@
-interface wlan0
+interface _IFACE_
 {
 	AdvManagedFlag off; # no DHCPv6 server here.
 #	AdvOtherConfigFlag on; # not even for options.
@@ -10,7 +10,7 @@ interface wlan0
   MaxRtrAdvInterval 600;
 	
 	#pick one non-link-local prefix assigned to the interface and start advertising it
-	prefix a:b:c:d
+	prefix a:b:c:d::/64
 	{
 		AdvOnLink on;
 		AdvAutonomous on;
@@ -19,7 +19,7 @@ interface wlan0
 #		AdvLifetime 30;
 	};
 
-	RDNSS a:b:c:d
+	RDNSS a:b:c:d:e:f:fe14:19d
 	{
 		AdvRDNSSLifetime 900;
 	};

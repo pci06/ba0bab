@@ -1,0 +1,14 @@
+
+#set -x
+echo "Entering $BASH_SOURCE ($reason)"
+
+if [ "$interface" = "vlan832" ]; then
+	case $reason in
+		BOUND|REBIND|RENEW)
+			echo "$BASH_SOURCE --> $reason"
+			/usr/bin/curl -s 'http://sync.afraid.org/u/74gnxxbsdbMnlmLi3fayFlj7/' >> /var/log/freedns.log 2> /dev/null
+		;;
+	esac
+fi
+echo "Exiting $BASH_SOURCE ($reason)"
+#set +x

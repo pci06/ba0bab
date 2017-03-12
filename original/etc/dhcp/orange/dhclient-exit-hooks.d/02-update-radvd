@@ -1,9 +1,10 @@
 
-set -x
+#set -x
 
 RADVDIFS=/etc/radvd.d/radvd-interfaces
+RADVDTMPL=/etc/radvd.d/iface.template
 
-echo "Entering update radvd"
+echo "Entering $BASH_SOURCE ($reason)"
 getLinkLocalSuffix () {
   local IFACE=$1
   /sbin/ip -o -6 addr show dev $IFACE scope link | /bin/sed -n '/.*fe80::.*/ {s,.*inet6[[:space:]]\+\([:[:alnum:]]\+\)/.*,\1,;p}' | /usr/bin/tail -n 1 | /usr/bin/cut -d ':' -f 3-
@@ -40,37 +41,64 @@ update_radvd_conf () {
 	local myPrefix=${newPrefixRaw}
 	local myPrefixLen=64
 	currentIpWithoutLen=${newPrefixRaw}:$(getLinkLocalIPV6Suffix $IFACE)
+	local ifaceExpr='s,_IFACE_,'${IFACE}','
 	local prefixExpr='s,\(^[[:space:]]*prefix[[:space:]]\+\)[:/[:alnum:]]\+,\1'"${myPrefix}"'::/'"$myPrefixLen"','
 	local rdnssExpr='s,\(^[[:space:]]*RDNSS[[:space:]]*\)[:[:alnum:]]*,\1'"$currentIpWithoutLen"','
 	/bin/mkdir -p ${radvdConf%/*}
+	
+	if [ ! -f "$radvdConf" ]; then
+		/bin/cp $RADVDTMPL $radvdConf
+	fi
 
-	/bin/sed -i "$prefixExpr;$rdnssExpr" $radvdConf
+	/bin/sed -i "$ifaceExpr;$prefixExpr;$rdnssExpr" $radvdConf
 	
 }
 
-if [ -n "$new_ip6_prefix" ]; then
 
-	case $reason in
-		BOUND6)
-			for IFACE in $(cat $RADVDIFS); do
-				update_radvd_conf $IFACE
-			done
+/usr/bin/logger -t update-radvd $reason $new_ip6_prefix $old_ip6_prefix
 
-			generateRadvdConf
+case $reason in
+		REBOOT)
+			echo "$BASH_SOURCE --> $reason"
+			myCause=reboot
 		;;
-		REBIND6|RENEW6)
-			for IFACE in $(cat $RADVDIFS); do
+		BOUND6)
+			for IFACE in $(sed -n '/^[[:space:]]*#.*/! {p}' $RADVDIFS); do
 				update_radvd_conf $IFACE
 			done
 
 			generateRadvdConf
-			systemctl start myradvd
+			/usr/bin/logger -t update-radvd $reason radvd conf generated $new_ip6_prefix $old_ip6_prefix
+		;;
+		REBIND6)
+			echo "$BASH_SOURCE --> $reason"
+			for IFACE in $(sed -n '/^[[:space:]]*#.*/! {p}' $RADVDIFS); do
+				update_radvd_conf $IFACE
+			done
+
+			if [ -n "$new_ip6_prefix" ] && [ "$new_ip6_prefix" != "$old_ip6_prefix" ]; then
+				generateRadvdConf
+			fi
+			if [ -z "$myCause" ]; then
+				systemctl restart myradvd
+			fi
+		;;
+		RENEW6)
+			echo "$BASH_SOURCE --> $reason"
+if [ -n "$new_ip6_prefix" ] && [ "$new_ip6_prefix" != "$old_ip6_prefix" ]; then
+			generateRadvdConf
+fi
+			systemctl restart myradvd
 		;;
 		RELEASE6)
+			echo "$BASH_SOURCE --> $reason"
 			systemctl stop myradvd
 		;;
-	esac
+		STOP6|STOP)
+			echo "$BASH_SOURCE --> $reason"
+			systemctl stop myradvd
+		;;
+esac
 
-fi
-echo "Exiting radvd"
-set +x
+echo "Exiting $BASH_SOURCE ($reason)"
+#set +x
