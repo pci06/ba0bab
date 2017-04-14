@@ -41,7 +41,7 @@ getNIC () {
 }
 
 getNICnMAC() {
-ip -o link | sed -n '/^[0-9]\+:[[:space:]]\+tap[0-9]\+:/ d;/^[0-9]\+:[[:space:]]\+tun[0-9]\+:/ d;/^[0-9]\+:[[:space:]]\+lo:/ d;s,[0-9]\+:[[:space:]]*\([^:]\+\):.*/ether[[:space:]]*\([^[:space:]]\+\)[[:space:]]\+.*,\1 \2,;p' | sort
+ip -o link | sed -n '/^[0-9]\+:[[:space:]]\+ppp[0-9]\+:/ d;/^[0-9]\+:[[:space:]]\+tap[0-9]\+:/ d;/^[0-9]\+:[[:space:]]\+tun[0-9]\+:/ d;/^[0-9]\+:[[:space:]]\+lo:/ d;s,[0-9]\+:[[:space:]]*\([^:]\+\):.*/ether[[:space:]]*\([^[:space:]]\+\)[[:space:]]\+.*,\1 \2,;p' | sort
 }
 
 $DIALOG --clear --title "Interface WAN" "$@" \
