@@ -54,8 +54,8 @@ update_radvd_conf () {
 #	local currentIpWithoutLen=${newPrefixRaw}:$(getLinkLocalIPV6Suffix $IFACE)
 	local currentIpWithoutLen=$my56::1
 
-	ip -6 addr flush dev ${IFACE} scope global permanent
-	ip -6 addr add $my56::1/64 dev ${IFACE}
+	ip -6 addr flush dev ${IFACE} scope global 
+	ip -6 addr add $my56::1/64 dev ${IFACE} scope global 
 
 
 	/bin/mkdir -p ${radvdConf%/*}

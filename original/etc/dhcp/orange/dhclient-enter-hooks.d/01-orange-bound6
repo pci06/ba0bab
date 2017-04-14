@@ -1,6 +1,6 @@
 
 #set -x
-echo "Entering $BASH_SOURCE ($reason)"
+/usr/bin/logger -t ${BASH_SOURCE} $reason enter
 
 
 setup_ip6 () {
@@ -15,19 +15,19 @@ if [ "$interface" = "vlan832" ]; then
 
 	case $reason in
 		PREINIT6)
-			echo "$BASH_SOURCE --> $reason"
+			/usr/bin/logger -t ${BASH_SOURCE} $reason $new_ip6_prefix $old_ip6_prefix
 			/sbin/ip link set dev $interface up
 			/bin/ip link set dev $interface type vlan egress 0:0 1:0 2:0 3:0 4:0 5:0 6:6 7:0
 		;;
 		BOUND6)
-			echo "$BASH_SOURCE --> $reason"
+			/usr/bin/logger -t ${BASH_SOURCE} $reason $new_ip6_prefix $old_ip6_prefix
 			setup_ip6 $new_ip6_prefix
 #			/bin/systemctl stop myradvd
 			/bin/rdisc6 -m -w 1000 ff02::2 $interface
 #			/bin/ip link set dev $interface type vlan egress 0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0
 		;;
 		REBIND6|RENEW6)
-			echo "$BASH_SOURCE --> $reason"
+			/usr/bin/logger -t ${BASH_SOURCE} $reason $new_ip6_prefix $old_ip6_prefix
 #			/bin/ip link set dev $interface type vlan egress 0:0 1:0 2:0 3:0 4:0 5:0 6:6 7:0
 #			/bin/systemctl stop myradvd
 			prefixMatch=${old_ip6_prefix%::/*}
@@ -38,8 +38,11 @@ if [ "$interface" = "vlan832" ]; then
 #			/bin/ip link set dev $interface type vlan egress 0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0
 			setup_ip6 $new_ip6_prefix
 		;;
+		DEPREF6)
+			/bin/systemctl stop myradvd
+		;;
 #		RELEASE6)
-#			echo "$BASH_SOURCE --> $reason"
+#			/usr/bin/logger -t ${BASH_SOURCE} $reason $new_ip6_prefix $old_ip6_prefix
 #			/bin/systemctl stop myradvd
 #			prefixMatch=${new_ip6_prefix%::/*}
 #			for currentAddr in $(/sbin/ip -o -6 addr show dev $interface scope global | sed -n '/.*'${prefixMatch}'.*/ {s,.*inet6[[:space:]]\+\([/:[:alnum:]]\+\)[[:space:]]\+.*,\1,;p}'); do
@@ -51,4 +54,4 @@ if [ "$interface" = "vlan832" ]; then
 fi
 
 #set +x
-echo "Exiting $BASH_SOURCE ($reason)"
+/usr/bin/logger -t ${BASH_SOURCE} $reason exit

@@ -1,19 +1,19 @@
 [Unit]
 Description=PCI Router Advertising Daemon
 #After=ifup@vlan832.service
-#Before=shutdown.target
+Before=shutdown.target
 Before=nfs-server.service
 After=systemd-journald-dev-log.socket
 After=remote-fs.target
 After=networking.service
 After=network-online.target
 Wants=network-online.target
-#Conflicts=shutdown.target
+Conflicts=shutdown.target
 
 
 [Service]
 Type=simple
-#Restart=on-failure
+Restart=on-failure
 #TimeoutSec=5min
 #IgnoreSIGPIPE=no
 #KillMode=process
