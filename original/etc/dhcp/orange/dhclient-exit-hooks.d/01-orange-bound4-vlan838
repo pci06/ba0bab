@@ -1,0 +1,47 @@
+
+set -x
+/usr/bin/logger -t ${BASH_SOURCE} $reason enter
+
+if [ "$interface" = "vlan838" ]; then
+	source /etc/dhcp/orange/classless-static-routes
+
+	case $reason in
+		PREINIT)
+			/usr/bin/logger -t ${BASH_SOURCE} $reason $new_ip6_prefix $old_ip6_prefix
+			/sbin/ip link set dev $interface up
+#			/bin/ip link set dev $interface type vlan egress 0:4 1:4 2:4 3:4 4:4 5:4 6:6 7:4
+#			/bin/ip link set dev $interface type vlan egress 0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0
+		;;
+		BOUND)
+#			/bin/ip link set dev $interface type vlan egress 0:4 1:4 2:4 3:4 4:4 5:4 6:6 7:4
+			/usr/bin/logger -t ${BASH_SOURCE} $reason BOUND $interface
+			
+			if [ -n "$old_rfc3442_classless_static_routes" ]; then
+				modify_routes delete "$(parse_option_121 $old_rfc3442_classless_static_routes)"
+			fi
+ 
+			# Add new routes, if they exist...
+			if [ -n "$new_rfc3442_classless_static_routes" ]; then
+				modify_routes add "$(parse_option_121 $new_rfc3442_classless_static_routes)"
+			fi
+		;;
+		REBIND | REBOOT)
+			/usr/bin/logger -t ${BASH_SOURCE} $reason REBIND $interface
+#			/bin/ip link set dev $interface type vlan egress 0:6 1:0 2:0 3:0 4:0 5:0 6:0 7:0
+			if [ -n "$old_rfc3442_classless_static_routes" ]; then
+				modify_routes delete "$(parse_option_121 $old_rfc3442_classless_static_routes)"
+			fi
+ 
+			# Add new routes, if they exist...
+			if [ -n "$new_rfc3442_classless_static_routes" ]; then
+				modify_routes add "$(parse_option_121 $new_rfc3442_classless_static_routes)"
+			fi
+		;;
+		RELEASE)
+			/usr/bin/logger -t ${BASH_SOURCE} $reason RELEASE $interface
+			/bin/ip link set dev $interface type vlan egress 0:6 1:0 2:0 3:0 4:0 5:0 6:0 7:0
+		;;
+	esac
+fi
+/usr/bin/logger -t ${BASH_SOURCE} $reason exit
+set +x
